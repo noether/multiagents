@@ -1,3 +1,4 @@
+import random
 import pygame
 import matplotlib.pyplot as pl
 import drawmisc
@@ -21,7 +22,7 @@ RED =   (255,   0,   0)
 size = [WIDTH, HEIGHT]
 screen = pygame.display.set_mode(size)
 
-numagents = 40
+numagents = 100
 listofunis = []
 
 for i in range(numagents):
@@ -41,16 +42,18 @@ runsim = True
 while(runsim):
     screen.fill(BLACK)
 
-    for uni in listofunis:
+    for uni in random.sample(listofunis, 10):
         uni.neighbors = []
         for nei in listofunis:
             if(np.linalg.norm(uni.pos - nei.pos) < 50):
                 uni.neighbors.append(nei)
-        uni.draw(screen)
+
+    for uni in listofunis:
         uni.flocking(dt)
         if(uni.pos[0] < 0 or uni.pos[0] > WIDTH or uni.pos[1] < 0 or uni.pos[1] > HEIGHT):
             uni.pos = 1000*np.random.rand(2)
             uni.vel = 50*np.random.rand(2)
+        uni.draw(screen)
 
     print(clock.get_fps())
     clock.tick(fps)

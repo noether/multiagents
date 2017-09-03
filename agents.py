@@ -97,7 +97,7 @@ class AgentUnicycle(Agent):
 
     def flocking(self, dt):
         numnei = len(self.neighbors)
-        if(numnei == 1):
+        if(numnei <= 1):
             desired_vel = self.vel
         else:
             centroid = np.zeros(2)
