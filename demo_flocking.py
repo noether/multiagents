@@ -22,7 +22,7 @@ RED =   (255,   0,   0)
 size = [WIDTH, HEIGHT]
 screen = pygame.display.set_mode(size)
 
-numagents = 100
+numagents = 1
 listofunis = []
 
 for i in range(numagents):
@@ -42,7 +42,7 @@ runsim = True
 while(runsim):
     screen.fill(BLACK)
 
-    for uni in random.sample(listofunis, 10):
+    for uni in random.sample(listofunis, min(numagents,10)):
         uni.neighbors = []
         for nei in listofunis:
             if(np.linalg.norm(uni.pos - nei.pos) < 50):
@@ -52,11 +52,11 @@ while(runsim):
         uni.flocking(dt)
         if(uni.pos[0] < 0 or uni.pos[0] > WIDTH or uni.pos[1] < 0 or uni.pos[1] > HEIGHT):
             uni.pos = 1000*np.random.rand(2)
-            uni.vel = 50-100*np.random.rand(2)
+            uni.theta = np.pi - float(2*np.pi*np.random.rand(1))
+            uni.speed = float(50*np.random.rand(1))
             uni.neighbors = []
         uni.draw(screen)
 
-    print(clock.get_fps())
     clock.tick(fps)
     pygame.display.flip()
 
