@@ -26,7 +26,7 @@ numagents = 100
 listofunis = []
 
 for i in range(numagents):
-    listofunis.append(ag.AgentUnicycle(WHITE, i, 1000-2000*np.random.rand(2), 50-100*np.random.rand(2)))
+    listofunis.append(ag.AgentUnicycle(WHITE, i, 1000*np.random.rand(2), 50-100*np.random.rand(2)))
 
 for uni in listofunis:
     uni.traj_draw = False
@@ -51,7 +51,7 @@ while(runsim):
     for uni in listofunis:
         uni.flocking(dt)
         if(uni.pos[0] < 0 or uni.pos[0] > WIDTH or uni.pos[1] < 0 or uni.pos[1] > HEIGHT):
-            uni.pos = 1000-2000*np.random.rand(2)
+            uni.pos = 1000*np.random.rand(2)
             uni.vel = 50-100*np.random.rand(2)
             uni.neighbors = []
         uni.draw(screen)
