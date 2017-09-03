@@ -88,6 +88,43 @@ class AgentDI(Agent):
             self.draw_trajectory(surf)
 
 class AgentUnicycle(Agent):
+    def __init__(self, color, label, pos=np.zeros(2), vel=np.zeros(2), traj_capacity=250, log_capacity=30000):
+        Agent.__init__(self, color, label, pos, vel, traj_capacity, log_capacity)
+        self.flock_kva = 1
+        self.flock_ks = 0.3
+        self.flock_kc = 1
+        self.flock_ke = 1.3
+
+    def flocking(self, dt):
+        numnei = len(self.neighbors)
+        if(numnei == 1):
+            desired_vel = self.vel
+        else:
+            centroid = np.zeros(2)
+            velavg = np.zeros(2)
+            separation = np.zeros(2)
+            desired_vel = np.zeros(2)
+
+            for nei in self.neighbors:
+                centroid += nei.pos
+                velavg += nei.vel
+                separation += self.pos - nei.pos
+
+            centroid /= numnei
+            velavg /= numnei
+
+            cohesion = centroid - self.pos
+
+            cohesion /= np.linalg.norm(cohesion)
+            separation /= np.linalg.norm(separation)
+            velavg /= np.linalg.norm(velavg)
+
+            desired_vel += self.flock_kva*velavg + self.flock_ks*separation + self.flock_kc*cohesion
+
+        error_theta = np.arctan2(desired_vel[1], desired_vel[0]) - self.theta
+
+        self.step_dt(0, self.flock_ke*error_theta, dt)
+
     def step_dt(self, us, uw, dt):
         self.theta += uw*dt
         self.theta = normalizeAngle(self.theta)
