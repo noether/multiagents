@@ -5,7 +5,7 @@ import agents as ag
 import numpy as np
 import logpostpro as lp
 
-# set size of the screen
+# setup simulation
 WIDTH = 1000
 HEIGHT = 1000
 
@@ -25,6 +25,7 @@ agentsi = ag.AgentSI(WHITE, 1, np.array([500.0,500.0]))
 agentdi = ag.AgentDI(RED, 2, np.array([240.0,250.0]), np.array([0.0, 6.0]))
 agentuni = ag.AgentUnicycle(GREEN, 3, np.array([600.0, 600.0]), np.array([5.0,0.0]))
 
+# run simulation
 pygame.init()
 clock = pygame.time.Clock()
 fps = 50
