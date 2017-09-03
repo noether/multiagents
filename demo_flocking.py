@@ -53,6 +53,7 @@ while(runsim):
         if(uni.pos[0] < 0 or uni.pos[0] > WIDTH or uni.pos[1] < 0 or uni.pos[1] > HEIGHT):
             uni.pos = 1000*np.random.rand(2)
             uni.vel = 50*np.random.rand(2)
+            uni.neighbors = []
         uni.draw(screen)
 
     print(clock.get_fps())
