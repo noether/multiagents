@@ -22,7 +22,7 @@ RED =   (255,   0,   0)
 size = [WIDTH, HEIGHT]
 screen = pygame.display.set_mode(size)
 
-numagents = 1
+numagents = 100
 listofunis = []
 
 for i in range(numagents):
