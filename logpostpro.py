@@ -46,6 +46,7 @@ def plot_position(axis, agent):
         axis.add_patch(up)
     else:
         axis.plot(np.trim_zeros(agent.log_pos[:,0], 'b'), np.trim_zeros(agent.log_pos[:,1], 'b'), color)
+        axis.plot(agent.log_pos[0, 0], agent.log_pos[0, 1], 'x'+color)
         axis.plot(agent.log_pos[agent.log_index-1, 0], agent.log_pos[agent.log_index-1, 1], 'o'+color)
 
 
