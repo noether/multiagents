@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+from numpy import linalg as la
 
 def normalizeAngle(angle):
     newAngle = angle;
@@ -35,9 +36,15 @@ class Agent:
         self.log_theta = np.zeros(self.log_capacity)
         self.log_index = 0
 
-        # Gains for the controllers
-        self.consensus_kc = 1e-3
-        self.consensus_kv = 10
+        # Consensus
+        self.consensus_kc = 1e-1
+        self.consensus_kv = 1
+
+        # Distance-based formation control
+        self.distance_based_kc = 1e-1
+        self.distance_based_kv = 1
+        self.desired_distances = []
+
 
     def log_trajectory(self):
         self.traj[self.traj_index,:] = self.pos
@@ -93,6 +100,16 @@ class AgentDI(Agent):
             u = u + (self.pos - nei.pos)
 
         u = -self.consensus_kc*u -self.consensus_kv*self.vel
+        self.step_dt(u, dt)
+
+    def distance_based(self, dt):
+        u = np.zeros(2)
+
+        for idx,nei in enumerate(self.neighbors):
+            z = self.pos - nei.pos
+            u = u + z/la.norm(z)*(la.norm(z) - self.desired_distances[idx])
+
+        u = -self.distance_based_kc*u -self.distance_based_kv*self.vel
         self.step_dt(u, dt)
 
     def draw(self, surf):
