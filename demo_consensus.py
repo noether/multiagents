@@ -39,7 +39,6 @@ for idx,edge in enumerate(listofedges):
     B[edge[0],idx] =  1
     B[edge[1],idx] = -1
 
-
 # run simulation
 pygame.init()
 clock = pygame.time.Clock()
@@ -51,15 +50,17 @@ runsim = True
 while(runsim):
     screen.fill(BLACK)
 
-    # Lists of neighbors in an undirected graph
+    # Lists of neighbors in an undirected graph (passed by copy... not very efficient)
     for edge in listofedges:
         listofagents[edge[0]].neighbors.append(listofagents[edge[1]])
         listofagents[edge[1]].neighbors.append(listofagents[edge[0]])
 
+    # Execute the consensus algorithm in a distributed way
     for agent in listofagents:
         agent.draw(screen)
         agent.consensus(dt)
 
+    # Draw the connected agents with a dashed line
     for edge in listofedges:
         drawmisc.draw_dashed_line(screen, WHITE, (listofagents[edge[0]].pos[0],HEIGHT-listofagents[edge[0]].pos[1]), (listofagents[edge[1]].pos[0],HEIGHT-listofagents[edge[1]].pos[1]))
 
