@@ -51,6 +51,7 @@ while(runsim):
     screen.fill(BLACK)
 
     # Lists of neighbors in an undirected graph (passed by copy... not very efficient)
+    # It would be great to pass them (only once) before the simulation by reference/"pointer"
     for edge in listofedges_and_distances:
         listofagents[edge[0]].neighbors.append(listofagents[edge[1]])
         listofagents[edge[0]].desired_distances.append(edge[2])
