@@ -39,10 +39,6 @@ for idx,edge in enumerate(listofedges):
     B[edge[0],idx] =  1
     B[edge[1],idx] = -1
 
-# Lists of neighbors in an undirected graph
-for edge in listofedges:
-    listofagents[edge[0]].neighbors.append(edge[1])
-    listofagents[edge[1]].neighbors.append(edge[0])
 
 # run simulation
 pygame.init()
@@ -55,9 +51,14 @@ runsim = True
 while(runsim):
     screen.fill(BLACK)
 
+    # Lists of neighbors in an undirected graph
+    for edge in listofedges:
+        listofagents[edge[0]].neighbors.append(listofagents[edge[1]])
+        listofagents[edge[1]].neighbors.append(listofagents[edge[0]])
+
     for agent in listofagents:
         agent.draw(screen)
-        agent.step_dt(np.array([0,0]), dt)
+        agent.consensus(dt)
 
     for edge in listofedges:
         drawmisc.draw_dashed_line(screen, WHITE, (listofagents[edge[0]].pos[0],HEIGHT-listofagents[edge[0]].pos[1]), (listofagents[edge[1]].pos[0],HEIGHT-listofagents[edge[1]].pos[1]))

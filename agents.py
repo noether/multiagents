@@ -35,6 +35,10 @@ class Agent:
         self.log_theta = np.zeros(self.log_capacity)
         self.log_index = 0
 
+        # Gains for the controllers
+        self.consensus_kc = 1e-3
+        self.consensus_kv = 10
+
     def log_trajectory(self):
         self.traj[self.traj_index,:] = self.pos
         self.traj_index += 1
@@ -81,6 +85,15 @@ class AgentDI(Agent):
         self.log_index += 1
         if(self.log_index >= self.log_capacity):
             self.log_index = 0
+
+    def consensus(self, dt):
+        u = np.zeros(2)
+
+        for nei in self.neighbors:
+            u = u + (self.pos - nei.pos)
+
+        u = -self.consensus_kc*u -self.consensus_kv*self.vel
+        self.step_dt(u, dt)
 
     def draw(self, surf):
         pygame.draw.circle(surf, self.color, (int(self.pos[0]),int(surf.get_height()-self.pos[1])), 4, 0)

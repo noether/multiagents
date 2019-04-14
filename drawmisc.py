@@ -26,6 +26,8 @@ def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
     target = Point(end_pos)
     displacement = target - origin
     length = len(displacement)
+    if(length < 2):
+        return
     slope = displacement/length
 
     for index in range(0, length/dash_length, 2):
