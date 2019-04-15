@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.gridspec as gridspec
 
+
+np.random.seed(10)
+
 do_debug = False
 
 num_agents = 5
@@ -25,8 +28,7 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 # Generate evolution with time (t) and agent (j)
 for t in range(num_times-1):
     for j in range(num_agents):
-        exclude_j = np.delete(data, j, axis=1)
-        u0 = np.sum(data[t, j, 0:2]- exclude_j[t, :, 0:2], axis=0)
+        u0 = np.sum(data[t, j, 0:2]- data[t, :, 0:2], axis=0)
         u = -consensus_kc*u0 -consensus_kv*data[t, j, 2:4]
         data[t+1, j, 2:4] = data[t, j, 2:4] + u*dt
         data[t+1, j, 0:2] = data[t, j, 0:2] + data[t, j, 2:4]*dt
