@@ -102,3 +102,6 @@ ENV/
 
 # swap
 *.swp
+
+#images
+*.png
