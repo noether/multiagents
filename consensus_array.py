@@ -7,8 +7,11 @@ np.random.seed(10)
 do_debug = False
 colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
+# Make plots from each agent reference frame
+change_reference = True
+
 # Model parameters
-num_agents = 5
+num_agents = 4
 space_dim  = 2
 num_steps  = 100
 step_size  = 0.9e-1
@@ -35,61 +38,82 @@ for step in range(num_steps-1):
         u0 = np.sum(x[j, step, 1:space_dim+1] - x[:, step, 1:space_dim+1], axis=0)
         u = -consensus_kc*u0 -consensus_kv*v[j, step, 1:space_dim+1]
         v[j, step+1, 1:space_dim+1] = v[j, step, 1:space_dim+1] + u*step_size
-        x[j, step+1, 1:space_dim+1] = x[j, step, 1:space_dim+1] + \
-                                      v[j, step, 1:space_dim+1]*step_size
+        x[j, step+1, 1:space_dim+1] = x[j, step, 1:space_dim+1] + v[j, step, 1:space_dim+1]*step_size
         x[j, step+1, 0] = step+1
         times[step] = step
         if do_debug:
             if j == 0:
                 print(u0, u, x, v)
 
-# Compute distance from converging point and speed arrays
-final_pos = np.average(x[:,-1,1:space_dim+1], axis=(0))
-dista = np.linalg.norm(x[:,:,1:space_dim+1] - final_pos, axis=(2)) # size = num_agents x num_steps
-speed = np.linalg.norm(v[:,:,1:space_dim+1], axis=(2)) # size = num_agents x num_steps
+
+# Transform all positions to reference frame of agent ref_agent:
+def galileo_transformation(x, v, ref_agent):
+    #speed_0 = np.linalg.norm(v[ref_agent,:,1:space_dim+1], axis=(1))
+    x_tilde = np.zeros_like(x)
+    x_tilde[:,:,1:space_dim+1] = x[:,:,1:space_dim+1] - x[ref_agent,:,1:space_dim+1]
+    x_tilde[:,:,0] = x[:,:,0]
+    v_tilde = np.zeros_like(v)
+    v_tilde[:,:,1:space_dim+1] = v[:,:,1:space_dim+1] - v[ref_agent,:,1:space_dim+1]
+    v_tilde[:,:,0] = v[:,:,0]
+    return x_tilde, v_tilde
 
 
-# Plot variables
-fig = plt.figure(figsize=(20,8))
-gs = gridspec.GridSpec(2, 5)
-ax1 = fig.add_subplot(gs[0:2, 0:2])
-ax2a = fig.add_subplot(gs[0, 2])
-ax2b = fig.add_subplot(gs[1, 2])
-ax3a = fig.add_subplot(gs[0, 3])
-ax3b = fig.add_subplot(gs[1, 3])
-ax4a = fig.add_subplot(gs[0, 4])
-ax4b = fig.add_subplot(gs[1, 4])
+def make_plot(x, v, outfile='test1.png'):
+    # Compute distance from converging point and speed arrays
+    final_pos = np.average(x[:,-1,1:space_dim+1], axis=(0))
+    dista = np.linalg.norm(x[:,:,1:space_dim+1] - final_pos, axis=(2)) # size = num_agents x num_steps
+    speed = np.linalg.norm(v[:,:,1:space_dim+1], axis=(2)) # size = num_agents x num_steps
 
-for j in range(num_agents):
-    ax1.plot(x[j,:,1], x[j,:,2], marker='.', ls='-',  color=colors[j])
-    ax2a.plot(times, x[j,:,1], marker='.', ls='-',  color=colors[j])
-    ax2b.plot(times, x[j,:,2], marker='.', ls='-',  color=colors[j])
-    ax3a.plot(times, v[j,:,1], marker='.', ls='-',  color=colors[j])
-    ax3b.plot(times, v[j,:,2], marker='.', ls='-',  color=colors[j])
-    ax4a.plot(times, speed[j], marker='', ls='-',  color=colors[j])
-    ax4b.plot(times, dista[j], marker='', ls='-',  color=colors[j])
+    # Plot variables
+    fig = plt.figure(figsize=(20,8))
+    gs = gridspec.GridSpec(2, 5)
+    ax1 = fig.add_subplot(gs[0:2, 0:2])
+    ax2a = fig.add_subplot(gs[0, 2])
+    ax2b = fig.add_subplot(gs[1, 2])
+    ax3a = fig.add_subplot(gs[0, 3])
+    ax3b = fig.add_subplot(gs[1, 3])
+    ax4a = fig.add_subplot(gs[0, 4])
+    ax4b = fig.add_subplot(gs[1, 4])
+    
+    for j in range(num_agents):
+        ax1.plot(x[j,:,1], x[j,:,2], marker='.', ls='-',  color=colors[j])
+        ax2a.plot(times, x[j,:,1], marker='.', ls='-',  color=colors[j])
+        ax2b.plot(times, x[j,:,2], marker='.', ls='-',  color=colors[j])
+        ax3a.plot(times, v[j,:,1], marker='.', ls='-',  color=colors[j])
+        ax3b.plot(times, v[j,:,2], marker='.', ls='-',  color=colors[j])
+        ax4a.plot(times, speed[j], marker='', ls='-',  color=colors[j])
+        ax4b.plot(times, dista[j], marker='', ls='-',  color=colors[j])
+    
+    # Plot average speed and distance
+    ax4a.plot(times, np.average(speed[:,:], axis=0), marker='', ls='-',
+              lw=3, color='k', label='average speed')
+    ax4b.plot(times, np.average(dista[:,:], axis=0), marker='', ls='-',
+              lw=3, color='k', label='average distance')
+    ax4a.legend(loc=0)
+    ax4b.legend(loc=0)
+    
+    
+    # Labels etc
+    ax1.set_title('X-Y')
+    ax2a.set_title('X vs time')
+    ax2b.set_title('Y vs time')
+    ax3a.set_title('Vx vs time')
+    ax3b.set_title('Vy vs time')
+    ax4a.set_title('Speed vs time')
+    ax4b.set_title('Distance vs time')
+    ax1.set_aspect('equal')
+    ax4a.semilogy()
+    ax4b.semilogy()
+    ax1.set_xlim(-2,2)
+    ax1.set_ylim(-2,2)
+    
+    fig.savefig(outfile, bbox_inches='tight')
 
-# Plot average speed and distance
-ax4a.plot(times, np.average(speed[:,:], axis=0), marker='', ls='-',
-          lw=3, color='k', label='average speed')
-ax4b.plot(times, np.average(dista[:,:], axis=0), marker='', ls='-',
-          lw=3, color='k', label='average distance')
-ax4a.legend(loc=0)
-ax4b.legend(loc=0)
 
-
-# Labels etc
-ax1.set_title('X-Y')
-ax2a.set_title('X vs time')
-ax2b.set_title('Y vs time')
-ax3a.set_title('Vx vs time')
-ax3b.set_title('Vy vs time')
-ax4a.set_title('Speed vs time')
-ax4b.set_title('Distance vs time')
-ax1.set_aspect('equal')
-ax4a.semilogy()
-ax4b.semilogy()
-
-fig.savefig('test1.png', bbox_inches='tight')
+make_plot(x, v, outfile = 'plot_ref.png')
+if change_reference:
+    for j in range(num_agents):
+        x_tilde, v_tilde = galileo_transformation(x, v, ref_agent=j)
+        make_plot(x_tilde, v_tilde, outfile = 'plot_ref_{0}.png'.format(j))
 
 
