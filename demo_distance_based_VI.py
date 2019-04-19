@@ -5,6 +5,9 @@ import agents as ag
 import numpy as np
 import logpostpro as lp
 
+# setup simulation
+WHITE = (255, 255, 255)
+
 # Desired configuration
 desired_configuration = [(0,0), (10,0), (10,10), (0,10)]
 undirected_edges = [(0,1), (1,2), (2,3), (3,0), (1,3)]
@@ -52,7 +55,7 @@ for idx,pos in enumerate(desired_configuration):
     pd = np.asarray(pos)
     ax0.plot(pd[0],pd[1], 'o', color=colors[idx])
 
-limitsarea = 1200
+limitsarea = 800
 num_simulations = 2000
 
 for num_sim in range(1,num_simulations+1):
