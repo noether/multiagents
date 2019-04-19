@@ -63,9 +63,13 @@ for step in range(num_steps-1):
 
 # Postprocessing
 
-# Translate and rotate to plot vs desired configuration
-p_pretty = []
+# Plot actual trajectories
+fig0 = pl.figure(0)
+ax = fig0.add_subplot(111)
+lp.plot_trajectories(ax, listofagents, B)
+ax.axis("equal")
 
+# Transform agents' positions to compare them with the desired configuration
 p1d = np.asarray(desired_configuration[0])
 p2d = np.asarray(desired_configuration[1])
 thetad = np.arctan2((p2d-p1d)[1],(p2d-p1d)[0])
@@ -78,11 +82,19 @@ st = np.sin(theta - thetad)
 ct = np.cos(theta - thetad)
 Rot = np.array([[ct, st],[-st,ct]])
 
-for agent in listofagents:
-    p_pretty.append(Rot.dot(agent.pos - listofagents[0].pos))
+# Translate and rotate to plot vs desired configuration
+fig1 = pl.figure(1)
+ax = fig1.add_subplot(111)
 
-fig = pl.figure(0)
-ax = fig.add_subplot(111)
-lp.plot_trajectories(ax, listofagents, B)
-ax.axis("equal")
+for agent in listofagents:
+    p0 = Rot.dot(agent.log_pos[0,:] - listofagents[0].pos)
+    ax.plot(p0[0],p0[1], 'kx')
+
+for pos in desired_configuration:
+    pd = np.asarray(pos)
+    ax.plot(pd[0],pd[1], 'bo')
+
+ax.set_xlim((-40,40))
+ax.set_ylim((-40,40))
+
 pl.show()

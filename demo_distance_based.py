@@ -86,8 +86,8 @@ while(runsim):
             pygame.quit()
             runsim = False
 
-
 # Postprocessing
+
 fig = pl.figure(0)
 ax = fig.add_subplot(111)
 lp.plot_trajectories(ax, listofagents)
