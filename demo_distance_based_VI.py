@@ -30,13 +30,6 @@ for i in range(0,len(desired_configuration)):
         if(i != j):
             complete_graph_edges.append((i,j))
 
-listofdistances_congruent = []
-for edge in complete_graph_edges:
-    pi = np.asarray(desired_configuration[edge[0]])
-    pj = np.asarray(desired_configuration[edge[1]])
-    d = np.linalg.norm(pi-pj)
-    listofdistances_congruent.append((edge[0],edge[1],d))
-
 numagents = len(desired_configuration)
 
 # Incidence matrix
@@ -48,29 +41,32 @@ for idx,edge in enumerate(listofedges_and_distances):
 
 # Simulation
 dt = 5e-3
-num_steps = 400
+num_steps = 500
+
+cc = 0 # number of non final congruent
 
 # Figures
-fig1 = pl.figure(1)
-ax1 = fig1.add_subplot(111)
-
 fig0 = pl.figure(0)
 ax0 = fig0.add_subplot(111)
+
+plot_trajectories = 1
+listoffigs = []
 
 colors = pl.rcParams['axes.prop_cycle'].by_key()['color']
 
 for idx,pos in enumerate(desired_configuration):
     pd = np.asarray(pos)
-    ax1.plot(pd[0],pd[1], 'o', color=colors[idx])
+    ax0.plot(pd[0],pd[1], 'o', color=colors[idx])
 
-num_simulations = 1
+limitsarea = 800
+num_simulations = 20
 
-for num_simulations in range(0,num_simulations):
+for num_sim in range(1,num_simulations+1):
 
     listofagents = []
 
     for i in range(numagents):
-        listofagents.append(ag.AgentDI(WHITE, i, 40*np.random.rand(2), 0*np.random.rand(2)))
+        listofagents.append(ag.AgentDI(WHITE, i, 80*np.random.rand(2), 0*np.random.rand(2)))
 
     for agent in listofagents:
         agent.distance_based_kv = 5
@@ -91,32 +87,56 @@ for num_simulations in range(0,num_simulations):
             agent.neighbors = []
 
     # Postprocessing
+    congruent = 1
+    for edge in complete_graph_edges:
+        pi = np.asarray(listofagents[edge[0]].pos)
+        pj = np.asarray(listofagents[edge[1]].pos)
+        d = np.linalg.norm(pi-pj)
 
-    # Plot actual trajectories
+        pic = np.asarray(desired_configuration[edge[0]])
+        pjc = np.asarray(desired_configuration[edge[1]])
+        dc = np.linalg.norm(pic-pjc)
 
-    lp.plot_trajectories(ax0, listofagents, B)
-    ax0.axis("equal")
+        if(np.abs((d-dc)) > 1e-1):
+            congruent = 0
+        if(np.linalg.norm(pi) > 1e4):
+            congruent = 0
 
-    # Transform agents' positions to compare them with the desired configuration
-    p1d = np.asarray(desired_configuration[0])
-    p2d = np.asarray(desired_configuration[1])
-    thetad = np.arctan2((p2d-p1d)[1],(p2d-p1d)[0])
 
-    p1 = listofagents[0].pos
-    p2 = listofagents[1].pos
-    theta = np.arctan2((p2-p1)[1],(p2-p1)[0])
+    
+    if(congruent):
+        # Transform agents' positions to compare them with the desired configuration
+        p1d = np.asarray(desired_configuration[0])
+        p2d = np.asarray(desired_configuration[1])
+        thetad = np.arctan2((p2d-p1d)[1],(p2d-p1d)[0])
 
-    st = np.sin(theta - thetad)
-    ct = np.cos(theta - thetad)
-    Rot = np.array([[ct, st],[-st,ct]])
+        p1 = listofagents[0].pos
+        p2 = listofagents[1].pos
+        theta = np.arctan2((p2-p1)[1],(p2-p1)[0])
 
-    # Translate and rotate to plot vs desired configuration
-    for idx,agent in enumerate(listofagents):
-        p0 = Rot.dot(agent.log_pos[0,:] - listofagents[0].pos)
-        ax1.plot(p0[0],p0[1], 'x', color=colors[idx])
+        st = np.sin(theta - thetad)
+        ct = np.cos(theta - thetad)
+        Rot = np.array([[ct, st],[-st,ct]])
 
-    ax1.set_xlim((-40,40))
-    ax1.set_ylim((-40,40))
+        # Translate and rotate to plot vs desired configuration
+        for idx,agent in enumerate(listofagents):
+            p0 = Rot.dot(agent.log_pos[0,:] - listofagents[0].pos)
+            ax0.plot(p0[0],p0[1], 'x', color=colors[idx])
+
+        ax0.set_xlim((-limitsarea,limitsarea))
+        ax0.set_ylim((-limitsarea,limitsarea))
+
+        # Plot actual trajectories
+        if plot_trajectories:
+           listoffigs.append(pl.figure(num_sim))
+           ax = pl.figure(num_sim).add_subplot(111)
+           lp.plot_trajectories(ax, listofagents, B)
+           ax.axis("equal")
+
+        cc = cc + 1
+        print("Congruent number", cc, " Num sim: ", num_sim)
 
 fig0.show()
-fig1.show()
+
+for figure in listoffigs:
+    figure.show()
