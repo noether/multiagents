@@ -21,9 +21,6 @@ RED =   (255,   0,   0)
 size = [WIDTH, HEIGHT]
 screen = pygame.display.set_mode(size)
 
-numagents = 4
-listofagents = []
-
 # Desired configuration
 desired_configuration = [(0,0), (100,0), (0,100), (100,100)]
 undirected_edges = [(0,1), (1,2), (2,3), (0,3)]
@@ -35,11 +32,15 @@ for edge in undirected_edges:
     d = np.linalg.norm(pi-pj)
     listofedges_and_distances.append((edge[0],edge[1],d))
 
+numagents = len(desired_configuration)
+listofagents = []
+
 for i in range(numagents):
     listofagents.append(ag.AgentDI(WHITE, i, 1000*np.random.rand(2), 50-100*np.random.rand(2)))
 
 for agent in listofagents:
     agent.traj_draw = False
+
 
 # Incidence matrix
 B = np.zeros((numagents, len(listofedges_and_distances)))
