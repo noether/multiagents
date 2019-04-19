@@ -5,13 +5,6 @@ import agents as ag
 import numpy as np
 import logpostpro as lp
 
-# setup simulation
-BLACK = (  0,   0,   0)
-WHITE = (255, 255, 255)
-BLUE =  (  0,   0, 255)
-GREEN = (  0, 255,   0)
-RED =   (255,   0,   0)
-
 # Desired configuration
 desired_configuration = [(0,0), (10,0), (10,10), (0,10)]
 undirected_edges = [(0,1), (1,2), (2,3), (3,0), (1,3)]
@@ -40,8 +33,8 @@ for idx,edge in enumerate(listofedges_and_distances):
     B[edge[1],idx] = -1
 
 # Simulation
-dt = 5e-3
-num_steps = 500
+dt = 1e-2
+num_steps = 200
 
 cc = 0 # number of non final congruent
 
@@ -49,24 +42,25 @@ cc = 0 # number of non final congruent
 fig0 = pl.figure(0)
 ax0 = fig0.add_subplot(111)
 
-plot_trajectories = 1
+plot_trajectories = 0
 listoffigs = []
 
 colors = pl.rcParams['axes.prop_cycle'].by_key()['color']
+markers = ['^','>','v','<'] 
 
 for idx,pos in enumerate(desired_configuration):
     pd = np.asarray(pos)
     ax0.plot(pd[0],pd[1], 'o', color=colors[idx])
 
-limitsarea = 800
-num_simulations = 20
+limitsarea = 1200
+num_simulations = 2000
 
 for num_sim in range(1,num_simulations+1):
 
     listofagents = []
 
     for i in range(numagents):
-        listofagents.append(ag.AgentDI(WHITE, i, 80*np.random.rand(2), 0*np.random.rand(2)))
+        listofagents.append(ag.AgentDI(WHITE, i, 100*np.random.rand(2), 0*np.random.rand(2)))
 
     for agent in listofagents:
         agent.distance_based_kv = 5
@@ -97,13 +91,13 @@ for num_sim in range(1,num_simulations+1):
         pjc = np.asarray(desired_configuration[edge[1]])
         dc = np.linalg.norm(pic-pjc)
 
-        if(np.abs((d-dc)) > 1e-1):
+        if(np.abs((d-dc)) > 1):
             congruent = 0
         if(np.linalg.norm(pi) > 1e4):
             congruent = 0
+        if(np.isnan(np.linalg.norm(pi))):
+            congruent = 0
 
-
-    
     if(congruent):
         # Transform agents' positions to compare them with the desired configuration
         p1d = np.asarray(desired_configuration[0])
@@ -121,7 +115,7 @@ for num_sim in range(1,num_simulations+1):
         # Translate and rotate to plot vs desired configuration
         for idx,agent in enumerate(listofagents):
             p0 = Rot.dot(agent.log_pos[0,:] - listofagents[0].pos)
-            ax0.plot(p0[0],p0[1], 'x', color=colors[idx])
+            ax0.plot(p0[0],p0[1], marker=markers[idx], color=colors[np.mod(num_sim,7)])
 
         ax0.set_xlim((-limitsarea,limitsarea))
         ax0.set_ylim((-limitsarea,limitsarea))
