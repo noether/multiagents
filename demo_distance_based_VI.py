@@ -9,8 +9,12 @@ import logpostpro as lp
 WHITE = (255, 255, 255)
 
 # Desired configuration
-desired_configuration = [(0,0), (10,0), (10,10), (0,10)]
-undirected_edges = [(0,1), (1,2), (2,3), (3,0), (1,3)]
+# desired_configuration = [(0,0), (10,0), (10,10), (0,10)] # Square
+
+desired_configuration = [(0,0), (10,0), (10,10), (0,10), (15,15), (-5, 5)]
+markers = ['^','>','v','<','1','2'] # At least same number as the num of agents
+
+undirected_edges = [(0,1), (1,2), (2,3), (3,0), (1,3), (0,4), (1,4), (3,5), (2,5)]
 listofedges_and_distances = []
 
 for edge in undirected_edges:
@@ -45,18 +49,17 @@ cc = 0 # number of non final congruent
 fig0 = pl.figure(0)
 ax0 = fig0.add_subplot(111)
 
-plot_trajectories = 0
+plot_trajectories = 1
 listoffigs = []
 
 colors = pl.rcParams['axes.prop_cycle'].by_key()['color']
-markers = ['^','>','v','<'] 
 
 for idx,pos in enumerate(desired_configuration):
     pd = np.asarray(pos)
     ax0.plot(pd[0],pd[1], 'o', color=colors[idx])
 
 limitsarea = 800
-num_simulations = 2000
+num_simulations = 20
 
 for num_sim in range(1,num_simulations+1):
 
