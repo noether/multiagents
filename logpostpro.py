@@ -36,7 +36,6 @@ def unicycle_patch(XY, yaw, color):
 
     return patches.PathPatch(path, facecolor=color, lw=2)
 
-
 def plot_position(axis, agent):
     color = colors[agent.color]
 
@@ -48,5 +47,28 @@ def plot_position(axis, agent):
         axis.plot(np.trim_zeros(agent.log_pos[:,0], 'b'), np.trim_zeros(agent.log_pos[:,1], 'b'), color)
         axis.plot(agent.log_pos[0, 0], agent.log_pos[0, 1], 'x'+color)
         axis.plot(agent.log_pos[agent.log_index-1, 0], agent.log_pos[agent.log_index-1, 1], 'o'+color)
+
+def plot_trajectories(axis, listofagents, B):
+    p_final = []
+    for agent in listofagents:
+        color = colors[agent.color]
+        axis.plot(np.trim_zeros(agent.log_pos[:,0], 'b'), np.trim_zeros(agent.log_pos[:,1], 'b'), color)
+        axis.plot(agent.log_pos[0, 0], agent.log_pos[0, 1], 'x'+color)
+        axis.plot(agent.log_pos[agent.log_index-1, 0], agent.log_pos[agent.log_index-1, 1], 'o'+color)
+        p_final.append((agent.log_pos[agent.log_index-1, 0], agent.log_pos[agent.log_index-1, 1]))
+
+    X = np.asarray(p_final)
+    X = X.reshape(2*len(listofagents),1)
+
+    agents, edges = B.shape
+    a, b = 0, 0
+    for i in range(0, edges):
+        for j in range(0, agents):
+            if B[j,i] == 1:
+                a = j
+            elif B[j,i] == -1:
+                b = j
+        axis.plot([X[2*a], X[2*b]], [X[2*a+1], X[2*b+1]], 'k--', lw=1.5)
+
 
 

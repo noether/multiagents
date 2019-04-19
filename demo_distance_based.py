@@ -90,7 +90,6 @@ while(runsim):
 # Postprocessing
 fig = pl.figure(0)
 ax = fig.add_subplot(111)
-for agent in listofagents:
-    lp.plot_position(ax, agent)
+lp.plot_trajectories(ax, listofagents)
 ax.axis("equal")
 pl.show()

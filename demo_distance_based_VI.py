@@ -41,7 +41,7 @@ for idx,edge in enumerate(listofedges_and_distances):
 
 # Simulation
 dt = 5e-3
-num_steps = 200
+num_steps = 400
 
 for agent in listofagents:
     agent.distance_based_kv = 5
@@ -83,7 +83,6 @@ for agent in listofagents:
 
 fig = pl.figure(0)
 ax = fig.add_subplot(111)
-for agent in listofagents:
-    lp.plot_position(ax, agent)
+lp.plot_trajectories(ax, listofagents, B)
 ax.axis("equal")
 pl.show()
