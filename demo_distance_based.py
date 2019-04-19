@@ -71,6 +71,7 @@ while(runsim):
     for agent in listofagents:
         agent.draw(screen)
         agent.distance_based(dt)
+        agent.neighbors = []
 
     # Draw the connected agents with a dashed line
     for edge in listofedges_and_distances:

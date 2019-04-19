@@ -15,6 +15,7 @@ class Agent:
         # States
         self.label = label # int
         self.pos = pos # ndarray float
+        self.pos_old = pos # ndarray float
         self.vel = vel # ndarray float
         self.theta = np.arctan2(vel[1], vel[0])
         self.speed = np.linalg.norm(vel)
@@ -111,6 +112,36 @@ class AgentDI(Agent):
 
         u = -self.distance_based_kc*u -self.distance_based_kv*self.vel
         self.step_dt(u, dt)
+
+    def distance_based_VI(self, dt):
+        u = np.zeros(2)
+
+        h = dt
+        kappa = self.distance_based_kv
+
+        kh = (kappa*h - 1) / (1 + kappa*h)
+        khb = (h**2) / (2*(1+kappa*h))
+
+        for idx,nei in enumerate(self.neighbors):
+            z = self.pos - nei.pos
+            Gamma = la.norm(z)**2 - self.desired_distances[idx]**2
+            u = u + z*Gamma
+
+        G = kh*self.pos_old + (2/(1+kappa*h))*self.pos
+
+        self.pos_old = self.pos
+
+        self.pos = G - khb*u
+
+        self.log_trajectory()
+
+        self.log_pos[self.log_index,:] = self.pos
+        self.log_vel[self.log_index,:] = self.vel
+        self.log_u[self.log_index,:] = u
+        self.log_index += 1
+        if(self.log_index >= self.log_capacity):
+            self.log_index = 0
+
 
     def draw(self, surf):
         pygame.draw.circle(surf, self.color, (int(self.pos[0]),int(surf.get_height()-self.pos[1])), 4, 0)
