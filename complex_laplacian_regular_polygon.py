@@ -87,6 +87,22 @@ def buildMs(n):
     Ms[0,n-1] = -1+0j
     return Ms
 
+def buildMt_vparallel12_sq():
+    Mt = np.zeros((n,n), dtype=np.complex_)
+    Mt[0,0] = 1+0j #mu 12
+    Mt[1,0] = 1+0j #mu 21
+    Mt[2,2] = -1+0j #mu 34
+    Mt[3,2] = -1+0j #mu 43
+    return Mt
+
+def buildM_enclosing_sq():
+    Menc = np.zeros((n,n), dtype=np.complex_)
+    Menc[0,0] = 1+0j #mu 12
+    Menc[1,0] = np.exp(np.complex(0,-np.pi/4)) #mu 21
+    Menc[2,1] = 1+0j #mu 32
+    return Menc
+
+
 def plot_edges(fig, X, B):
     agents, edges = B.shape
     f = plt.figure(fig)
@@ -112,26 +128,51 @@ def build_pstar_polygon(n):
 def formationControl(p, t, L):
     return -L.dot(p)
 
+def formationControl_heading(p, t, L):
+    z_12_star = 1 + 0j
+    if(t > 50):
+        z_12_star = np.exp(np.complex(0,np.pi/4))*z_12_star
+    if(t > 100):
+        z_12_star = np.exp(np.complex(0,np.pi/4))*z_12_star
+    if(t > 150):
+        z_12_star = np.exp(np.complex(0,np.pi/4))*z_12_star
+    if(t > 200):
+        z_12_star = 4*np.exp(np.complex(0,np.pi/4))*z_12_star
+
+    heading_control = np.zeros(p0.size,dtype=np.complex_)
+    heading_control[0] = (p[0]-p[1]) - z_12_star
+    return -L.dot(p) - heading_control
+
 if __name__ == "__main__":
 
-    n = 10
+    n = 4
     ps = build_pstar_polygon(n)
     Mr = buildMr(n)
     Ms = buildMs(n)
+    Mt = buildMt_vparallel12_sq()
+    Menc = buildM_enclosing_sq()
+
     B = buildB(n)
     L = buildLaplacian(n,ps,B)
 
     R = 1/(2*np.sin(np.pi/n)) # Norm of p_i in the reference shape
     ia = (n-2)*np.pi/n # Internal angle
 
-    kr = 0.025 * R / (2*np.sin(ia/2))
-    ks = 0.025 * R / (2*np.cos(ia/2))
+    kr = 0 * 0.025 * R / (2*np.sin(ia/2)) # Gain that determines the angular speed in shaped consensus
+    ks = 0 * -0.025 * R / (2*np.cos(ia/2)) # Gain that determines the scaling speed in shaped consensus
+    kt = 0.25; # Gain for vel translation
+    ke = 0.025; # Gain for enclosing
 
     Lmod = L -kr*Mr.dot(B.T) -ks*Ms.dot(B.T)
+    Lmod_vel = L -kt*Mt.dot(B.T)
+    Lmod_enclosing = L -ke*Menc.dot(B.T)
 
-    t = np.linspace(0, 250, 10001)
+    t = np.linspace(0, 300, 10001)
     p0 = np.random.uniform(-10,10,n) + 1j*np.random.uniform(-10,10,n)
-    p, infodict = odeintz(formationControl, p0, t, args=(Lmod,), full_output=True)
+
+    #p, infodict = odeintz(formationControl, p0, t, args=(Lmod,), full_output=True) # Shaped Consensus
+    #p, infodict = odeintz(formationControl_heading, p0, t, args=(Lmod_vel,), full_output=True) # Vel heading
+    p, infodict = odeintz(formationControl, p0, t, args=(Lmod_enclosing,), full_output=True) # Enclosing
 
     agentcolor = ['r', 'g', 'b', 'k', 'm', 'c', 'y', 'r', 'g', 'b', 'r', 'g', 'b', 'k', 'm', 'c', 'y', 'r', 'g', 'b', 'r', 'g', 'b', 'k', 'm', 'c', 'y', 'r', 'g', 'b']
     plt.clf()
@@ -143,28 +184,43 @@ if __name__ == "__main__":
     plt.title("Reference shape")
     plt.grid(True)
 
+    #time_stamps = (1500,3500,5500,7500,9500)
+    time_stamps = ()
     plt.figure(1)
     for i in range(n):
-        plt.plot(p[:,i].real, p[:,i].imag, agentcolor[i])
+        plt.plot(p[:9500,i].real, p[:9500,i].imag, agentcolor[i])
         plt.plot(p[0,i].real, p[0,i].imag, 'x'+agentcolor[i], mew=1)
-        plt.plot(p[-1,i].real, p[-1,i].imag, 'o'+agentcolor[i], mew=1)
+        plt.plot(p[9500,i].real, p[9500,i].imag, 'o'+agentcolor[i], mew=1)
+        for ts in time_stamps:
+            plt.plot(p[ts,i].real, p[ts,i].imag, 'o'+agentcolor[i], mew=1)
 
-    plot_edges(1,p[-1,:],B.real)
+    plot_edges(1,p[9500,:],B.real)
+    for ts in time_stamps:
+        plot_edges(1,p[ts,:],B.real)
+
+    #plt.text(p[1500,1].real, p[1500,1].imag-2, 't = ' + str(t[1500]))
+    #plt.text(p[3500,0].real+2, p[3500,0].imag, 't = ' + str(t[3500]))
+    #plt.text(p[5500,1].real+2, p[5500,1].imag, 't = ' + str(t[5500]))
+    #plt.text(p[7500,i].real+2, p[7500,i].imag, 't = ' + str(t[7500]))
+    #plt.text(p[9500,i].real, p[9500,i].imag-2, 't = ' + str(t[9500]))
+
     plt.axis("equal")
     plt.title("Agents' trajectory")
     plt.grid(True)
 
-    a = plt.axes([0.7,0.65,0.20,0.30])
-    xavg = sum(p[-1,:].real)/n
-    yavg = sum(p[-1,:].imag)/n
-    a.set_xlim(xavg-0.25,xavg+0.25)
-    a.set_ylim(yavg-0.25,yavg+0.25)
-    for i in range(n):
-        a.plot(p[:,i].real, p[:,i].imag, agentcolor[i])
-        a.plot(p[0,i].real, p[0,i].imag, 'x'+agentcolor[i], mew=1)
-        a.plot(p[-1,i].real, p[-1,i].imag, 'o'+agentcolor[i], mew=1)
+# If you need Zoom, e.g., for shaped consensus
 
-    a.grid(True)
-    plot_edges(1,p[-1,:],B.real)
+#    a = plt.axes([0.1,0.05,0.20*1.5,0.30*1.5])
+#    xavg = sum(p[-1,:].real)/n
+#    yavg = sum(p[-1,:].imag)/n
+#    a.set_xlim(xavg-0.025,xavg+0.025)
+#    a.set_ylim(yavg-0.025,yavg+0.025)
+#    for i in range(n):
+#        a.plot(p[:,i].real, p[:,i].imag, agentcolor[i])
+#        a.plot(p[0,i].real, p[0,i].imag, 'x'+agentcolor[i], mew=1)
+#        a.plot(p[-1,i].real, p[-1,i].imag, 'o'+agentcolor[i], mew=1)
+
+#    a.grid(True)
+#    plot_edges(1,p[-1,:],B.real)
 
     plt.show()
