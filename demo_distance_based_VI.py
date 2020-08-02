@@ -11,7 +11,7 @@ WHITE = (255, 255, 255)
 # Desired configuration
 # desired_configuration = [(0,0), (10,0), (10,10), (0,10)] # Square
 
-desired_configuration = [(0,0), (10,0), (10,10), (0,10), (15,15), (-5, 5)]
+desired_configuration = [(0,0), (10,5), (5,12), (-15,10), (-15,0), (-5, 15)]
 markers = ['^','>','v','<','1','2'] # At least same number as the num of agents
 
 undirected_edges = [(0,1), (1,2), (2,3), (3,0), (1,3), (0,4), (1,4), (3,5), (2,5)]
@@ -41,7 +41,7 @@ for idx,edge in enumerate(listofedges_and_distances):
 
 # Simulation
 dt = 1e-2
-num_steps = 200
+num_steps = 400
 
 cc = 0 # number of non final congruent
 
@@ -49,7 +49,7 @@ cc = 0 # number of non final congruent
 fig0 = pl.figure(0)
 ax0 = fig0.add_subplot(111)
 
-plot_trajectories = 1
+plot_trajectories = 0
 listoffigs = []
 
 colors = pl.rcParams['axes.prop_cycle'].by_key()['color']
@@ -58,15 +58,36 @@ for idx,pos in enumerate(desired_configuration):
     pd = np.asarray(pos)
     ax0.plot(pd[0],pd[1], 'o', color=colors[idx])
 
+agents, edges = B.shape
+a, b = 0, 0
+X = np.array(desired_configuration)
+X = X.reshape(2*agents,1)
+
+for i in range(0, edges):
+    for j in range(0, agents):
+        if B[j,i] == 1:
+            a = j
+        elif B[j,i] == -1:
+            b = j
+    ax0.plot([X[2*a], X[2*b]], [X[2*a+1], X[2*b+1]], 'k--', lw=1.5)
+
 limitsarea = 800
-num_simulations = 20
+num_simulations = 10000
+
+selected_agent = 1
+
+buscar = 400.0
 
 for num_sim in range(1,num_simulations+1):
 
     listofagents = []
 
     for i in range(numagents):
-        listofagents.append(ag.AgentDI(WHITE, i, 100*np.random.rand(2), 0*np.random.rand(2)))
+        if i == selected_agent:
+            init_pos = np.array(desired_configuration[i]) + (buscar*np.random.rand(2) - buscar/2.0)
+            listofagents.append(ag.AgentDI(WHITE, i, init_pos, 0*np.random.rand(2)))
+        else:
+            listofagents.append(ag.AgentDI(WHITE, i, np.array(desired_configuration[i]), 0*np.random.rand(2)))
 
     for agent in listofagents:
         agent.distance_based_kv = 5
@@ -105,38 +126,13 @@ for num_sim in range(1,num_simulations+1):
             congruent = 0
 
     if(congruent):
-        # Transform agents' positions to compare them with the desired configuration
-        p1d = np.asarray(desired_configuration[0])
-        p2d = np.asarray(desired_configuration[1])
-        thetad = np.arctan2((p2d-p1d)[1],(p2d-p1d)[0])
-
-        p1 = listofagents[0].pos
-        p2 = listofagents[1].pos
-        theta = np.arctan2((p2-p1)[1],(p2-p1)[0])
-
-        st = np.sin(theta - thetad)
-        ct = np.cos(theta - thetad)
-        Rot = np.array([[ct, st],[-st,ct]])
-
-        # Translate and rotate to plot vs desired configuration
-        for idx,agent in enumerate(listofagents):
-            p0 = Rot.dot(agent.log_pos[0,:] - listofagents[0].pos)
-            ax0.plot(p0[0],p0[1], marker=markers[idx], color=colors[np.mod(num_sim,7)])
-
-        ax0.set_xlim((-limitsarea,limitsarea))
-        ax0.set_ylim((-limitsarea,limitsarea))
-
-        # Plot actual trajectories
-        if plot_trajectories:
-           listoffigs.append(pl.figure(num_sim))
-           ax = pl.figure(num_sim).add_subplot(111)
-           lp.plot_trajectories(ax, listofagents, B)
-           ax.axis("equal")
+        ax0.plot(init_pos[0],init_pos[1], 'x', color=colors[selected_agent])
 
         cc = cc + 1
         print("Congruent number", cc, " Num sim: ", num_sim)
 
+ax0.axis("equal")
 fig0.show()
 
-for figure in listoffigs:
-    figure.show()
+#for figure in listoffigs:
+#    figure.show()
