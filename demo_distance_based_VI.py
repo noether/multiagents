@@ -40,8 +40,8 @@ for idx,edge in enumerate(listofedges_and_distances):
     B[edge[1],idx] = -1
 
 # Simulation
-dt = 1e-2
-num_steps = 400
+dt = 1e-3
+num_steps = 2000
 
 cc = 0 # number of non final congruent
 
@@ -51,6 +51,8 @@ ax0 = fig0.add_subplot(111)
 
 plot_trajectories = 0
 listoffigs = []
+
+ll = []
 
 colors = pl.rcParams['axes.prop_cycle'].by_key()['color']
 
@@ -72,64 +74,71 @@ for i in range(0, edges):
     ax0.plot([X[2*a], X[2*b]], [X[2*a+1], X[2*b+1]], 'k--', lw=1.5)
 
 limitsarea = 800
-num_simulations = 10000
-
-selected_agent = 1
+num_simulations = 1000
 
 buscar = 400.0
 
-for num_sim in range(1,num_simulations+1):
+for num_ag in range(1,2,1):
 
-    listofagents = []
+    selected_agent = num_ag
+    print("New agent ", num_ag)
 
-    for i in range(numagents):
-        if i == selected_agent:
-            init_pos = np.array(desired_configuration[i]) + (buscar*np.random.rand(2) - buscar/2.0)
-            listofagents.append(ag.AgentDI(WHITE, i, init_pos, 0*np.random.rand(2)))
-        else:
-            listofagents.append(ag.AgentDI(WHITE, i, np.array(desired_configuration[i]), 0*np.random.rand(2)))
+    for num_sim in range(1,num_simulations+1):
 
-    for agent in listofagents:
-        agent.distance_based_kv = 5
+        listofagents = []
 
-    for step in range(num_steps-1):
+        for i in range(numagents):
+            if i == selected_agent:
+                init_pos = np.array(desired_configuration[i]) + (buscar*np.random.rand(2) - buscar/2.0)
+                listofagents.append(ag.AgentDI(WHITE, i, init_pos, 0*np.random.rand(2)))
+            else:
+                listofagents.append(ag.AgentDI(WHITE, i, np.array(desired_configuration[i]), 0*np.random.rand(2)))
 
-        # Lists of neighbors in an undirected graph (passed by copy... not very efficient)
-        # It would be great to pass them (only once) before the simulation by reference/"pointer"
-        for edge in listofedges_and_distances:
-            listofagents[edge[0]].neighbors.append(listofagents[edge[1]])
-            listofagents[edge[0]].desired_distances.append(edge[2])
-            listofagents[edge[1]].neighbors.append(listofagents[edge[0]])
-            listofagents[edge[1]].desired_distances.append(edge[2])
-
-        # Execute the consensus algorithm in a distributed way
         for agent in listofagents:
-            agent.distance_based_VI(dt)
-            agent.neighbors = []
+            agent.distance_based_kv = 5
 
-    # Postprocessing
-    congruent = 1
-    for edge in complete_graph_edges:
-        pi = np.asarray(listofagents[edge[0]].pos)
-        pj = np.asarray(listofagents[edge[1]].pos)
-        d = np.linalg.norm(pi-pj)
+        for step in range(num_steps-1):
 
-        pic = np.asarray(desired_configuration[edge[0]])
-        pjc = np.asarray(desired_configuration[edge[1]])
-        dc = np.linalg.norm(pic-pjc)
+            # Lists of neighbors in an undirected graph (passed by copy... not very efficient)
+            # It would be great to pass them (only once) before the simulation by reference/"pointer"
+            for edge in listofedges_and_distances:
+                listofagents[edge[0]].neighbors.append(listofagents[edge[1]])
+                listofagents[edge[0]].desired_distances.append(edge[2])
+                listofagents[edge[1]].neighbors.append(listofagents[edge[0]])
+                listofagents[edge[1]].desired_distances.append(edge[2])
 
-        if(np.abs((d-dc)) > 1):
-            congruent = 0
-        if(np.linalg.norm(pi) > 1e4):
-            congruent = 0
-        if(np.isnan(np.linalg.norm(pi))):
-            congruent = 0
+            # Execute the consensus algorithm in a distributed way
+            for agent in listofagents:
+                agent.distance_based_VI(dt)
+                agent.neighbors = []
 
-    if(congruent):
-        ax0.plot(init_pos[0],init_pos[1], 'x', color=colors[selected_agent])
+        # Postprocessing
+        congruent = 1
+        for edge in complete_graph_edges:
+            pi = np.asarray(listofagents[edge[0]].pos)
+            pj = np.asarray(listofagents[edge[1]].pos)
+            d = np.linalg.norm(pi-pj)
 
-        cc = cc + 1
-        print("Congruent number", cc, " Num sim: ", num_sim)
+            pic = np.asarray(desired_configuration[edge[0]])
+            pjc = np.asarray(desired_configuration[edge[1]])
+            dc = np.linalg.norm(pic-pjc)
+
+            if(np.abs((d-dc)) > 1):
+                congruent = 0
+            if(np.linalg.norm(pi) > 1e4):
+                congruent = 0
+            if(np.isnan(np.linalg.norm(pi))):
+                congruent = 0
+
+        if(congruent):
+            #ax0.plot(init_pos[0],init_pos[1], 'x', color=colors[selected_agent], markersize=2.5)
+            ll.append(init_pos)
+            cc = cc + 1
+            print("Congruent number ", cc, " Num sim: ", num_sim)
+
+    np.savetxt('log'+str(num_ag), ll)
+    ll = []
+    cc = 0 # number of non final congruent
 
 ax0.axis("equal")
 fig0.show()
