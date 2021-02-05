@@ -13,7 +13,7 @@ class Point:
         return Point((self.x - other.x, self.y - other.y))
     def __mul__(self, scalar):
         return Point((self.x*scalar, self.y*scalar))
-    def __div__(self, scalar):
+    def __truediv__(self, scalar):
         return Point((self.x/scalar, self.y/scalar))
     def __len__(self):
         return int(math.sqrt(self.x**2 + self.y**2))
@@ -30,7 +30,7 @@ def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
         return
     slope = displacement/length
 
-    for index in range(0, length/dash_length, 2):
+    for index in range(0, int(length/dash_length), 2):
         start = origin + (slope *    index    * dash_length)
         end   = origin + (slope * (index + 1) * dash_length)
         pygame.draw.line(surf, color, start.get(), end.get(), width)
