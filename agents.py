@@ -95,7 +95,7 @@ class AgentDI(Agent):
             self.log_index = 0
 
     def consensus(self, dt):
-        u = np.zeros(2)
+        u = np.zeros((2,1))
 
         for nei in self.neighbors:
             u = u + (self.pos - nei.pos)
@@ -104,7 +104,7 @@ class AgentDI(Agent):
         self.step_dt(u, dt)
 
     def distance_based(self, dt):
-        u = np.zeros(2)
+        u = np.zeros((2,1))
 
         for idx,nei in enumerate(self.neighbors):
             z = self.pos - nei.pos
@@ -114,7 +114,7 @@ class AgentDI(Agent):
         self.step_dt(u, dt)
 
     def distance_based_VI(self, dt):
-        u = np.zeros(2)
+        u = np.zeros((2,1))
 
         h = dt
         kappa = self.distance_based_kv
@@ -161,10 +161,10 @@ class AgentUnicycle(Agent):
         if(numnei <= 1):
             desired_vel = self.vel
         else:
-            centroid = np.zeros(2)
-            velavg = np.zeros(2)
-            separation = np.zeros(2)
-            desired_vel = np.zeros(2)
+            centroid = np.zeros((2,1))
+            velavg = np.zeros((2,1))
+            separation = np.zeros((2,1))
+            desired_vel = np.zeros((2,1))
 
             for nei in self.neighbors:
                 centroid += nei.pos

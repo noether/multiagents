@@ -26,7 +26,7 @@ numagents = 100
 listofunis = []
 
 for i in range(numagents):
-    listofunis.append(ag.AgentUnicycle(WHITE, i, 1000*np.random.rand(2), 50-100*np.random.rand(2)))
+    listofunis.append(ag.AgentUnicycle(WHITE, i, 1000*np.random.rand(2,1), 50-100*np.random.rand(2,1)))
 
 for uni in listofunis:
     uni.traj_draw = False
@@ -50,10 +50,10 @@ while(runsim):
 
     for uni in listofunis:
         uni.flocking(dt)
-        uni.pos[0] = np.where(uni.pos[0]<0, WIDTH, uni.pos[0])
-        uni.pos[0] = np.where(uni.pos[0]>WIDTH, 0, uni.pos[0])
-        uni.pos[1] = np.where(uni.pos[1]<0, HEIGHT, uni.pos[1])
-        uni.pos[1] = np.where(uni.pos[1]>HEIGHT, 0, uni.pos[1])
+        uni.pos[0][0] = np.where(uni.pos[0][0]<0, WIDTH, uni.pos[0][0])
+        uni.pos[0][0] = np.where(uni.pos[0][0]>WIDTH, 0, uni.pos[0][0])
+        uni.pos[1][0] = np.where(uni.pos[1][0]<0, HEIGHT, uni.pos[1][0])
+        uni.pos[1][0] = np.where(uni.pos[1][0]>HEIGHT, 0, uni.pos[1][0])
         uni.draw(screen)
 
     clock.tick(fps)

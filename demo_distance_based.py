@@ -36,7 +36,7 @@ for edge in undirected_edges:
     listofedges_and_distances.append((edge[0],edge[1],d))
 
 for i in range(numagents):
-    listofagents.append(ag.AgentDI(WHITE, i, 1000*np.random.rand(2), 50-100*np.random.rand(2)))
+    listofagents.append(ag.AgentDI(WHITE, i, 1000*np.random.rand(2,1), 50-100*np.random.rand(2,1)))
 
 for agent in listofagents:
     agent.traj_draw = False
@@ -90,6 +90,7 @@ while(runsim):
 
 fig = pl.figure(0)
 ax = fig.add_subplot(111)
-lp.plot_trajectories(ax, listofagents)
+for agent in listofagents:
+    lp.plot_position(ax, agent)
 ax.axis("equal")
 pl.show()

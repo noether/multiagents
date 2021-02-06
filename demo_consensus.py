@@ -25,7 +25,7 @@ numagents = 4
 listofagents = []
 
 for i in range(numagents):
-    listofagents.append(ag.AgentDI(WHITE, i, 1000*np.random.rand(2), 50-100*np.random.rand(2)))
+    listofagents.append(ag.AgentDI(WHITE, i, 1000*np.random.rand(2,1), 50-100*np.random.rand(2,1)))
 
 for agent in listofagents:
     agent.traj_draw = False
@@ -63,7 +63,7 @@ while(runsim):
 
     # Draw the connected agents with a dashed line
     for edge in listofedges:
-        drawmisc.draw_dashed_line(screen, WHITE, (listofagents[edge[0]].pos[0],HEIGHT-listofagents[edge[0]].pos[1]), (listofagents[edge[1]].pos[0],HEIGHT-listofagents[edge[1]].pos[1]))
+        drawmisc.draw_dashed_line(screen, WHITE, (listofagents[edge[0]].pos[0][0],HEIGHT-listofagents[edge[0]].pos[1][0]), (listofagents[edge[1]].pos[0][0],HEIGHT-listofagents[edge[1]].pos[1][0]))
 
     clock.tick(fps)
     pygame.display.flip()
