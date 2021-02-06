@@ -11,13 +11,13 @@ def normalizeAngle(angle):
     return newAngle;
 
 class Agent:
-    def __init__(self, color, label, pos=np.zeros(2), vel=np.zeros(2), traj_capacity=250, log_capacity=30000):
+    def __init__(self, color, label, pos=np.zeros((2,1)), vel=np.zeros((2,1)), traj_capacity=250, log_capacity=30000):
         # States
         self.label = label # int
         self.pos = pos # ndarray float
         self.pos_old = pos # ndarray float
         self.vel = vel # ndarray float
-        self.theta = np.arctan2(vel[1], vel[0])
+        self.theta = np.arctan2(vel[1][0], vel[0][0])
         self.speed = np.linalg.norm(vel)
 
         self.neighbors = [] # list of neighbors
@@ -48,7 +48,7 @@ class Agent:
 
 
     def log_trajectory(self):
-        self.traj[self.traj_index,:] = self.pos
+        self.traj[self.traj_index,:] = self.pos.T
         self.traj_index += 1
         if(self.traj_index >= self.traj_capacity):
             self.traj_full = True
@@ -68,14 +68,14 @@ class AgentSI(Agent):
 
         self.log_trajectory()
 
-        self.log_pos[self.log_index,:] = self.pos
-        self.log_u[self.log_index,:] = u
+        self.log_pos[self.log_index,:] = self.pos.T
+        self.log_u[self.log_index,:] = u.T
         self.log_index += 1
         if(self.log_index >= self.log_capacity):
             self.log_index = 0
 
     def draw(self, surf):
-        pygame.draw.circle(surf, self.color, (int(self.pos[0]),int(surf.get_height()-self.pos[1])), 4, 0)
+        pygame.draw.circle(surf, self.color, (int(self.pos[0][0]),int(surf.get_height()-self.pos[1][0])), 4, 0)
         if(self.traj_draw):
             self.draw_trajectory(surf)
 
@@ -87,9 +87,9 @@ class AgentDI(Agent):
 
         self.log_trajectory()
 
-        self.log_pos[self.log_index,:] = self.pos
-        self.log_vel[self.log_index,:] = self.vel
-        self.log_u[self.log_index,:] = u
+        self.log_pos[self.log_index,:] = self.pos.T
+        self.log_vel[self.log_index,:] = self.vel.T
+        self.log_u[self.log_index,:] = u.T
         self.log_index += 1
         if(self.log_index >= self.log_capacity):
             self.log_index = 0
@@ -144,7 +144,7 @@ class AgentDI(Agent):
 
 
     def draw(self, surf):
-        pygame.draw.circle(surf, self.color, (int(self.pos[0]),int(surf.get_height()-self.pos[1])), 4, 0)
+        pygame.draw.circle(surf, self.color, (int(self.pos[0][0]),int(surf.get_height()-self.pos[1][0])), 4, 0)
         if(self.traj_draw):
             self.draw_trajectory(surf)
 
@@ -182,7 +182,7 @@ class AgentUnicycle(Agent):
 
             desired_vel += self.flock_kva*velavg + self.flock_ks*separation + self.flock_kc*cohesion
 
-        error_theta = np.arctan2(desired_vel[1], desired_vel[0]) - self.theta
+        error_theta = np.arctan2(desired_vel[1][0], desired_vel[0][0]) - self.theta
 
         self.step_dt(0, self.flock_ke*error_theta, dt)
 
@@ -190,13 +190,13 @@ class AgentUnicycle(Agent):
         self.theta += uw*dt
         self.theta = normalizeAngle(self.theta)
         self.speed += us*dt
-        self.vel = self.speed*np.array([np.cos(self.theta), np.sin(self.theta)])
+        self.vel = self.speed*np.array([[np.cos(self.theta)], [np.sin(self.theta)]])
         self.pos += self.vel*dt
 
         self.log_trajectory()
 
-        self.log_pos[self.log_index,:] = self.pos
-        self.log_vel[self.log_index,:] = self.vel
+        self.log_pos[self.log_index,:] = self.pos.T
+        self.log_vel[self.log_index,:] = self.vel.T
         self.log_u[self.log_index,:] = np.array([us,uw])
         self.log_theta[self.log_index] = self.theta
         self.log_index += 1
@@ -212,9 +212,9 @@ class AgentUnicycle(Agent):
         a = b*np.sin(apex/2)
         h = b*np.cos(apex/2)
 
-        z1 = np.array([-a/2, h*0.3])
-        z2 = np.array([-a/2, -h*0.3])
-        z3 = np.array([h*0.6, 0])
+        z1 = np.array([[-a/2], [h*0.3]])
+        z2 = np.array([[-a/2], [-h*0.3]])
+        z3 = np.array([[h*0.6], [0]])
 
         z1 = self.pos + 20*Rot.dot(z1)
         z2 = self.pos + 20*Rot.dot(z2)
@@ -222,7 +222,7 @@ class AgentUnicycle(Agent):
 
         yoff = surf.get_height()
 
-        tuple_of_corners = ((z1[0],yoff-z1[1]),(z2[0],yoff-z2[1]),(z3[0],yoff-z3[1]))
+        tuple_of_corners = ((z1[0][0],yoff-z1[1][0]),(z2[0][0],yoff-z2[1][0]),(z3[0][0],yoff-z3[1][0]))
         pygame.draw.polygon(surf, self.color, tuple_of_corners)
 
         if(self.traj_draw):

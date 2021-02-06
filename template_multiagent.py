@@ -21,9 +21,9 @@ RED =   (255,   0,   0)
 size = [WIDTH, HEIGHT]
 screen = pygame.display.set_mode(size)
 
-agentsi = ag.AgentSI(WHITE, 1, np.array([500.0,500.0]))
-agentdi = ag.AgentDI(RED, 2, np.array([240.0,250.0]), np.array([0.0, 6.0]))
-agentuni = ag.AgentUnicycle(GREEN, 3, np.array([600.0, 600.0]), np.array([5.0,0.0]))
+agentsi = ag.AgentSI(WHITE, 1, np.array([[500.0],[500.0]]))
+agentdi = ag.AgentDI(RED, 2, np.array([[240.0],[250.0]]), np.array([[0.0], [6.0]]))
+agentuni = ag.AgentUnicycle(GREEN, 3, np.array([[600.0], [600.0]]), np.array([[5.0],[0.0]]))
 
 # run simulation
 pygame.init()
@@ -39,8 +39,8 @@ while(runsim):
     agentdi.draw(screen)
     agentuni.draw(screen)
     drawmisc.draw_dashed_line(screen, WHITE, (0,screen.get_height()-0), (100,screen.get_height()-100))
-    agentsi.step_dt(np.array([30,2]), dt)
-    agentdi.step_dt(np.array([0,0]), dt)
+    agentsi.step_dt(np.array([[30],[2]]), dt)
+    agentdi.step_dt(np.array([[0],[0]]), dt)
     agentuni.step_dt(0, 0, dt)
     clock.tick(fps)
     pygame.display.flip()
