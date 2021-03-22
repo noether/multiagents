@@ -135,9 +135,9 @@ class AgentDI(Agent):
 
         self.log_trajectory()
 
-        self.log_pos[self.log_index,:] = self.pos
-        self.log_vel[self.log_index,:] = self.vel
-        self.log_u[self.log_index,:] = u
+        self.log_pos[self.log_index,:] = self.pos.T
+        self.log_vel[self.log_index,:] = self.vel.T
+        self.log_u[self.log_index,:] = u.T
         self.log_index += 1
         if(self.log_index >= self.log_capacity):
             self.log_index = 0

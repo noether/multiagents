@@ -40,8 +40,8 @@ for idx,edge in enumerate(listofedges_and_distances):
     B[edge[1],idx] = -1
 
 # Simulation
-dt = 1e-2
-num_steps = 200
+dt = 1e-3
+num_steps = 5000
 
 cc = 0 # number of non final congruent
 
@@ -66,7 +66,7 @@ for num_sim in range(1,num_simulations+1):
     listofagents = []
 
     for i in range(numagents):
-        listofagents.append(ag.AgentDI(WHITE, i, 100*np.random.rand(2), 0*np.random.rand(2)))
+        listofagents.append(ag.AgentDI(WHITE, i, 100*np.random.rand(2,1), 0*np.random.rand(2,1)))
 
     for agent in listofagents:
         agent.distance_based_kv = 5
@@ -81,7 +81,7 @@ for num_sim in range(1,num_simulations+1):
             listofagents[edge[1]].neighbors.append(listofagents[edge[0]])
             listofagents[edge[1]].desired_distances.append(edge[2])
 
-        # Execute the consensus algorithm in a distributed way
+        # Execute the VI algorithm in a distributed way
         for agent in listofagents:
             agent.distance_based_VI(dt)
             agent.neighbors = []
@@ -116,12 +116,12 @@ for num_sim in range(1,num_simulations+1):
 
         st = np.sin(theta - thetad)
         ct = np.cos(theta - thetad)
-        Rot = np.array([[ct, st],[-st,ct]])
+        Rot = np.array([[ct[0], st[0]],[-st[0],ct[0]]])
 
         # Translate and rotate to plot vs desired configuration
         for idx,agent in enumerate(listofagents):
-            p0 = Rot.dot(agent.log_pos[0,:] - listofagents[0].pos)
-            ax0.plot(p0[0],p0[1], marker=markers[idx], color=colors[np.mod(num_sim,7)])
+            p0 = Rot.dot(np.array([ [ agent.log_pos[0,0]], [agent.log_pos[0,1]]] ) - listofagents[0].pos)
+            ax0.plot(p0[0][0],p0[1][0], marker=markers[idx], color=colors[np.mod(num_sim,7)])
 
         ax0.set_xlim((-limitsarea,limitsarea))
         ax0.set_ylim((-limitsarea,limitsarea))
